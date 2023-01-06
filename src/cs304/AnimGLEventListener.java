@@ -2,30 +2,24 @@ package cs304;
 
 import Textures.AnimListener;
 import Textures.TextureReader;
-
-//import static com.sun.org.apache.xalan.internal.lib.ExsltDatetime.time;
+import java.io.File;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import java.awt.event.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import javax.media.opengl.*;
 import java.util.BitSet;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import javax.media.opengl.glu.GLU;
 import com.sun.opengl.util.j2d.TextRenderer;
 import java.awt.Color;
 import java.awt.Font;
-import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import sun.audio.AudioPlayer;
-import sun.audio.AudioStream;
 
-public class AnimGLEventListener4 extends AnimListener {
+public class AnimGLEventListener extends AnimListener implements MouseListener {
 
 	int animationIndex_blue = 3;
 	int maxHeight = 500;
@@ -37,42 +31,42 @@ public class AnimGLEventListener4 extends AnimListener {
 
 	Set<Integer> pressed = new HashSet<Integer>();
 
-	FileInputStream music;
-	AudioStream audios;
-
 	static Anim anim;
-
-//	int line = 700;
-//	boolean hasCrossedBlue = false;
-
-	GLAutoDrawable gldddd;
 
 	TextRenderer t_blue = new TextRenderer(new Font("Comic Sans MS", Font.BOLD, 14));
 	TextRenderer renderer = new TextRenderer(new Font("SanasSerif", Font.BOLD, 20));
 	TextRenderer t_red = new TextRenderer(new Font("Comic Sans MS", Font.BOLD, 14));
 	Color color = new Color(0, 0, 0);
 
-	String time = java.time.LocalTime.now() + "";
-	int timer = 0, m = 1;
-
+	int m = 1;
 	int x1 = 380, y1 = 370, x2 = 515, y2 = 240;
-//                                            450, 250
+
 	int blueFlagX = w - 20, blueFlagY = h / 2, redFlagX = 20, redFlagY = h / 2;
 	int red_score = 0, blue_score = 0, redf = 0, bluef = 0;
 	boolean isRedFlag = true, finishGame = false;
 	boolean withflag = false, n = false;
 	boolean isBlueFlag = true;
 
+	boolean soundOn = true;
+	Clip clip;
+
+	boolean f_r4 = false;
+	boolean f_r5 = false;
+	boolean f_b4 = false;
+	boolean f_b5 = false;
+
 	String textureNames[] = { "redbulll.png", "blueball.png", "redflagbb.png", "blueflagbb.png", "redballflag.png",
-			"wall.png", "redVSblue.png", "Back.png" };
+			"wall.png", "sound.png", "mute.png", "redVSblue.png", "Back.png" };
 	TextureReader.Texture texture[] = new TextureReader.Texture[textureNames.length];
 	int textures[] = new int[textureNames.length];
 	Rectangle bound[] = { new Rectangle(w, 0, w + 100, h + 100), new Rectangle(0, h, w, h + 100),
 			new Rectangle(-100, 0, 0, h), new Rectangle(0, -100, w, 0), new Rectangle(100, 100, 200, 200),
 			new Rectangle(100, 350, 200, 450), new Rectangle(700, 100, 800, 200), new Rectangle(700, 350, 800, 450) };
 
-	Ball blue[] = { new Ball(0, 0), new Ball(0, 0), new Ball(515, 370), new Ball(515, 120) };
-	Ball red[] = { new Ball(0, 0), new Ball(0, 0), new Ball(380, 370), new Ball(380, 120) };
+	Ball blue[] = { new Ball(0, 0), new Ball(0, 0), new Ball(515, 370), new Ball(515, 120), new Ball(570, 480),
+			new Ball(600, 15) };
+	Ball red[] = { new Ball(0, 0), new Ball(0, 0), new Ball(380, 370), new Ball(380, 120), new Ball(330, 480),
+			new Ball(300, 15) };
 
 	private GLCanvas glc;
 
@@ -106,13 +100,7 @@ public class AnimGLEventListener4 extends AnimListener {
 		}
 
 		// music
-		try {
-			music = new FileInputStream(new File("catchtheflag.wav"));
-			audios = new AudioStream(music);
-		} catch (Exception ex) {
-			System.err.println(ex.getMessage());
-		}
-		AudioPlayer.player.start(audios);
+		music("Assets//catchtheflag.wav");
 
 		gl.glLoadIdentity();
 		gl.glOrtho(0, maxWidth, 0, maxHeight, -1, 1);
@@ -122,14 +110,8 @@ public class AnimGLEventListener4 extends AnimListener {
 
 		GL gl = gld.getGL();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
-		gldddd = gld;
 
 		if (!finishGame) {
-//            try {
-////                DrawTime();
-//            } catch (ParseException ex) {
-//               System.err.println(ex.getMessage());
-//            }
 			// background
 			DrawSprite(gl, 450, 250, textures.length - 1, 900, 500);
 			// scores
@@ -137,32 +119,45 @@ public class AnimGLEventListener4 extends AnimListener {
 			blueScore(this.blue_score);
 			// redVSblue
 			DrawSprite(gl, 440, 470, textures.length - 2, 200, 50);
+			// sound
+			if (soundOn) {
+				DrawSprite(gl, 40, 30, textures.length - 4, 50, 20);
+				clip.start();
 
-			for (int i = 0; i < red.length; i++) {
+			} else {
+				DrawSprite(gl, 40, 30, textures.length - 3, 50, 20);
+				clip.stop();
+			}
+
+			// 2_redBalls, 2_blueBalls
+			DrawSprite(gl, red[4].x, red[4].y, 0, r, r);
+			DrawSprite(gl, red[5].x, red[5].y, 0, r, r);
+			DrawSprite(gl, blue[4].x, blue[4].y, 1, r, r);
+			DrawSprite(gl, blue[5].x, blue[5].y, 1, r, r);
+			// vertical direction reverse
+			vdr();
+
+			for (int i = 0; i < red.length - 2; i++)
 				DrawSprite(gl, red[i].x, red[i].y, 0, r, r);
-			}
-			for (int i = 0; i < blue.length; i++) {
+
+			for (int i = 0; i < blue.length - 2; i++)
 				DrawSprite(gl, blue[i].x, blue[i].y, 1, r, r);
-			}
-			for (int i = 4; i < bound.length; i++) {
+
+			for (int i = 4; i < bound.length; i++)
 				DrawSprite(gl, (bound[i].topX + bound[i].bottomX) / 2, (bound[i].topY + bound[i].bottomY) / 2, 5, 100,
 						100);
-			}
 
-			if (isRedFlag) {
+			if (isRedFlag)
 				DrawSprite(gl, redFlagX, redFlagY, 2, 50, 50);
-			} else {
+			else
 				DrawSprite(gl, blue[3].x, blue[3].y, 2, 30, 30);
-			}
-			if (isBlueFlag) {
-				DrawSprite(gl, blueFlagX, blueFlagY, 3, 50, 50);
-			} else {
-				DrawSprite(gl, red[3].x, red[3].y, 3, 30, 30);
-			}
-			
-			doo();
 
-//			handleKeyPress();
+			if (isBlueFlag)
+				DrawSprite(gl, blueFlagX, blueFlagY, 3, 50, 50);
+			else
+				DrawSprite(gl, red[3].x, red[3].y, 3, 30, 30);
+
+			textures_handle();
 
 			red[0].moveBall(bound, 5);
 			red[1].moveBall(bound, 5);
@@ -182,8 +177,6 @@ public class AnimGLEventListener4 extends AnimListener {
 				if (Ball.isIntersectBall(blue[3], red[i]) && !isRedFlag)
 					isRedFlag = true;
 
-			System.out.println(red[3].x);
-
 		}
 
 		if (blue_score == 2) {
@@ -192,6 +185,7 @@ public class AnimGLEventListener4 extends AnimListener {
 				new teamBlueWon();
 			blue_score = 0;
 			anim.dispose();
+			clip.stop();
 		}
 		if (red_score == 2) {
 			finishGame = true;
@@ -199,7 +193,7 @@ public class AnimGLEventListener4 extends AnimListener {
 				new teamRedWon();
 			red_score = 0;
 			anim.dispose();
-
+			clip.stop();
 		}
 
 	}
@@ -253,57 +247,7 @@ public class AnimGLEventListener4 extends AnimListener {
 		this.glc = glcanvas;
 	}
 
-//	public void handleKeyPress() {
-////      if(Math.sqrt(Math.pow(x1-x2,2)+ Math.pow(y1-y2,2))‏){
-//// 		if(Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))>=100){
-//		if (isKeyPressed(KeyEvent.VK_LEFT))
-//			red[3].moveBallX(-1, bound);
-//		else if (isKeyPressed(KeyEvent.VK_RIGHT))
-//			red[3].moveBallX(1, bound);
-//		else if (isKeyPressed(KeyEvent.VK_DOWN))
-//			red[3].moveBallY(-1, bound);
-//		else if (isKeyPressed(KeyEvent.VK_UP))
-//			red[3].moveBallY(1, bound);
-//
-//		else if (isKeyPressed(KeyEvent.VK_A)) {
-//			blue[3].moveBallX(-1, bound);
-//		}
-//		if (isKeyPressed(KeyEvent.VK_D)) {
-//			blue[3].moveBallX(1, bound);
-//		}
-//		if (isKeyPressed(KeyEvent.VK_S)) {
-//			blue[3].moveBallY(-1, bound);
-//		}
-//		if (isKeyPressed(KeyEvent.VK_W)) {
-//			blue[3].moveBallY(1, bound);
-//		}
-//	}
-
-//	public void handleKeyPress(KeyEvent e) {
-//		if (e.getKeyCode() == KeyEvent.VK_UP) {
-//			red[3].y_dir = 1;
-//			red[3].x_dir = 0;
-//			red[3].moveBallY(1, bound);
-//		}
-//		if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-//			red[3].y_dir = -1;
-//			red[3].x_dir = 0;
-//			red[3].moveBallY(-1, bound);
-//		}
-//		if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-//			red[3].y_dir = 0;
-//			red[3].x_dir = 1;
-//			red[3].moveBallX(1, bound);
-//		}
-//		if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-//			red[3].y_dir = 0;
-//			red[3].x_dir = -1;
-//			red[3].moveBallX(-1, bound);
-//		}
-//	}
-	
-	public void doo()
-	{
+	public void textures_handle() {
 		if ((blue[3].x >= redFlagX - 15 && blue[3].x <= redFlagX + 15)
 				&& (blue[3].y >= redFlagY - 15 && blue[3].y <= redFlagY + 15)) {
 			isRedFlag = false;
@@ -319,10 +263,48 @@ public class AnimGLEventListener4 extends AnimListener {
 			}
 		}
 		if (isBlueFlag == false) {
-			if (red[3].x <= w / 2) {
+			if (red[3].x <= redFlagX) {
 				red_score++;
 				isBlueFlag = true;
 			}
+		}
+	}
+
+	public void vdr() {
+		// red
+		red[4].y = (f_r4) ? red[4].y - 3 : red[4].y + 3;
+		if (red[4].y >= 480)
+			f_r4 = true;
+		if (red[4].y <= 15)
+			f_r4 = false;
+
+		red[5].y = (f_r5) ? red[5].y + 3 : red[5].y - 3;
+		if (red[5].y >= 480)
+			f_r5 = false;
+		if (red[5].y <= 15)
+			f_r5 = true;
+
+		// blue
+		blue[4].y = (f_b4) ? blue[4].y - 3 : blue[4].y + 3;
+		if (blue[4].y >= 480)
+			f_b4 = true;
+		if (blue[4].y <= 15)
+			f_b4 = false;
+
+		blue[5].y = (f_b5) ? blue[5].y + 3 : blue[5].y - 3;
+		if (blue[5].y >= 480)
+			f_b5 = false;
+		if (blue[5].y <= 15)
+			f_b5 = true;
+	}
+
+	public void music(String filepath) {
+		try {
+			AudioInputStream audioIn = AudioSystem.getAudioInputStream(new File(filepath));
+			clip = AudioSystem.getClip();
+			clip.open(audioIn);
+		} catch (Exception ex) {
+			System.out.println(ex);
 		}
 	}
 
@@ -351,122 +333,12 @@ public class AnimGLEventListener4 extends AnimListener {
 		} else if (pressed.contains(KeyEvent.VK_W)) {
 			blue[3].moveBallY(1, bound);
 		}
-
-//		if ((blue[3].x >= redFlagX - 15 && blue[3].x <= redFlagX + 15)
-//				&& (blue[3].y >= redFlagY - 15 && blue[3].y <= redFlagY + 15)) {
-//			isRedFlag = false;
-//		}
-//		if ((red[3].x >= blueFlagX - 15 && red[3].x <= blueFlagX + 15)
-//				&& (red[3].y >= blueFlagY - 15 && red[3].y <= blueFlagY + 15)) {
-//			isBlueFlag = false;
-//		}
-//		if (isRedFlag == false) {
-//			if (blue[3].x >= w / 2) {
-//				blue_score++;
-//				isRedFlag = true;
-//			}
-//		}
-//		if (isBlueFlag == false) {
-//			if (red[3].x <= w / 2) {
-//				red_score++;
-//				isBlueFlag = true;
-//			}
-//		}
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
 		pressed.remove(e.getKeyCode());
 	}
-
-//	@Override
-//	public void keyPressed(KeyEvent e) {
-//		if (e.getKeyCode() == KeyEvent.VK_UP) {
-//			red[3].y_dir = 1;
-//			red[3].x_dir = 0;
-//			red[3].moveBallY(1, bound);
-//		}
-//		if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-//			red[3].y_dir = -1;
-//			red[3].x_dir = 0;
-//			red[3].moveBallY(-1, bound);
-//		}
-//		if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-//			red[3].y_dir = 0;
-//			red[3].x_dir = 1;
-//			red[3].moveBallX(1, bound);
-//		}
-//		if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-//			red[3].y_dir = 0;
-//			red[3].x_dir = -1;
-//			red[3].moveBallX(-1, bound);
-//		}
-//
-//		if (e.getKeyCode() == KeyEvent.VK_W) {
-//			blue[3].y_dir = 1;
-//			blue[3].x_dir = 0;
-//			blue[3].moveBallY(1, bound);
-//		}
-//		if (e.getKeyCode() == KeyEvent.VK_S) {
-//			blue[3].y_dir = -1;
-//			blue[3].x_dir = 0;
-//			blue[3].moveBallY(-1, bound);
-//		}
-//		if (e.getKeyCode() == KeyEvent.VK_D) {
-//			blue[3].y_dir = 0;
-//			blue[3].x_dir = 1;
-//			blue[3].moveBallX(1, bound);
-//		}
-//		if (e.getKeyCode() == KeyEvent.VK_A) {
-//			blue[3].y_dir = 0;
-//			blue[3].x_dir = -1;
-//			blue[3].moveBallX(-1, bound);
-//		}
-//		if ((blue[3].x >= redFlagX - 15 && blue[3].x <= redFlagX + 15)
-//				&& (blue[3].y >= redFlagY - 15 && blue[3].y <= redFlagY + 15)) {
-//			isRedFlag = false;
-//		}
-//		if ((red[3].x >= blueFlagX - 15 && red[3].x <= blueFlagX + 15)
-//				&& (red[3].y >= blueFlagY - 15 && red[3].y <= blueFlagY + 15)) {
-//			isBlueFlag = false;
-//		}
-//		if (isRedFlag == false) {
-//			if (blue[3].x >= w / 2) {
-//				blue_score++;
-//				isRedFlag = true;
-//			}
-//		}
-//		if (isBlueFlag == false) {
-//			if (red[3].x <= w / 2) {
-//				red_score++;
-//				isBlueFlag = true;
-//			}
-//
-//		}
-//	}
-
-	public void DrawTime() throws ParseException {
-		String time1 = time;
-		String time2 = java.time.LocalTime.now() + "";
-
-		SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
-		Date date1 = format.parse(time1);
-		Date date2 = format.parse(time2);
-		long difference = date2.getTime() - date1.getTime();
-
-		String fi = String.format("%02d:%02d", TimeUnit.MILLISECONDS.toMinutes(difference),
-				TimeUnit.MILLISECONDS.toSeconds(difference)
-						- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(difference)));
-
-		renderer.beginRendering(gldddd.getWidth(), gldddd.getHeight());
-		renderer.draw(fi, 500, 500);
-		renderer.endRendering();
-	}
-
-//	@Override
-//	public void keyReleased(final KeyEvent event) {
-//		int keyCode = event.getKeyCode();
-//	}
 
 	@Override
 	public void keyTyped(final KeyEvent event) {
@@ -477,22 +349,27 @@ public class AnimGLEventListener4 extends AnimListener {
 		return false;
 	}
 
+	public void mouseClicked(MouseEvent e) {
+		double x = e.getX();
+		double y = e.getY();
+		if (x >= 20 && x <= 60 && y >= 430 && y <= 445)
+			soundOn = (soundOn) ? false : true;
+	}
+
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	public void mouseExited(MouseEvent e) {
+	}
+
+	public void mousePressed(MouseEvent e) {
+	}
+
+	public void mouseReleased(MouseEvent e) {
+	}
+
 	public static void main(String[] args) {
-		anim = new Anim(new AnimGLEventListener4());
+		anim = new Anim(new AnimGLEventListener());
 	}
 
 }
-
-//if(red[3].x >= line)
-//	hasCrossedBlue = true;
-//if(hasCrossed)
-//	for(int i=0; i<2; i++)
-//	{
-//		if(i % 2 == 0)
-//			blue[i].moveTo(new Ball(red[3].x + (int)(Math.random() * 50), red[3].y), bound);
-//		else
-//			blue[i].moveTo(new Ball(red[3].x, red[3].y + (int)(Math.random() * 50)), bound);
-//	}
-//else
-//	for(int i=0; i<2; i++)
-//		blue[i].moveBall(bound, 5);

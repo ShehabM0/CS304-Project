@@ -4,7 +4,6 @@ import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -36,8 +35,7 @@ public class teamRedWon extends JFrame {
 
 	public teamRedWon() {
 		getContentPane().setBackground(Color.BLACK);
-		setIconImage(Toolkit.getDefaultToolkit()
-				.getImage("Assets\\navBarIcon.jpg"));
+		setIconImage(Toolkit.getDefaultToolkit().getImage("Assets\\navBarIcon.jpg"));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Catch The Flag");
 		setSize(650, 360);
@@ -49,7 +47,7 @@ public class teamRedWon extends JFrame {
 		lblNewLabel.setFont(new Font("Wide Latin", Font.ITALIC, 20));
 		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel.setForeground(Color.BLACK);
-		lblNewLabel.setBounds(169, 98, 317, 50);
+		lblNewLabel.setBounds(170, 100, 320, 50);
 		getContentPane().add(lblNewLabel);
 
 		backToMenu = new JButton("Back To Menu");
@@ -66,8 +64,7 @@ public class teamRedWon extends JFrame {
 			}
 		});
 
-		background = new JLabel(
-				new ImageIcon("Assets\\Trophy.jpg"));
+		background = new JLabel(new ImageIcon("Assets\\Trophy.jpg"));
 		background.setBounds(0, 0, 634, 321);
 		background.setLayout(new FlowLayout());
 		getContentPane().add(background);

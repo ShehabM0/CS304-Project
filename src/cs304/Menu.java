@@ -3,7 +3,6 @@ package cs304;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -37,10 +36,8 @@ public class Menu extends JFrame {
 		});
 	}
 
-
 	public Menu() {
-		setIconImage(Toolkit.getDefaultToolkit()
-				.getImage("Assets\\navBarIcon.jpg"));
+		setIconImage(Toolkit.getDefaultToolkit().getImage("Assets\\navBarIcon.jpg"));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Catch The Flag");
 		setSize(900, 500);
@@ -81,9 +78,9 @@ public class Menu extends JFrame {
 		background.setLayout(new FlowLayout());
 		getContentPane().add(background);
 	}
-	
+
 	private void playActionPerformed(ActionEvent evt) {
-		new AnimGLEventListener4().main(null);;
+		new AnimGLEventListener().main(null);
 		dispose();
 	}
 

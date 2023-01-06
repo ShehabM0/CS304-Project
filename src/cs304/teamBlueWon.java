@@ -6,7 +6,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -36,8 +35,7 @@ public class teamBlueWon extends JFrame {
 
 	public teamBlueWon() {
 		getContentPane().setBackground(Color.BLACK);
-		setIconImage(Toolkit.getDefaultToolkit()
-				.getImage("Assets\\navBarIcon.jpg"));
+		setIconImage(Toolkit.getDefaultToolkit().getImage("Assets\\navBarIcon.jpg"));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Catch The Flag");
 		setSize(650, 360);
@@ -66,8 +64,7 @@ public class teamBlueWon extends JFrame {
 			}
 		});
 
-		background = new JLabel(
-				new ImageIcon("Assets\\Trophy.jpg"));
+		background = new JLabel(new ImageIcon("Assets\\Trophy.jpg"));
 		background.setBounds(0, 0, 634, 321);
 		background.setLayout(new FlowLayout());
 		getContentPane().add(background);
