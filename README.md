@@ -3,7 +3,7 @@
 <h3> Installation tips </h3>
 <hr>
 <ul>
-  <li> Download Assets From <a href="https://drive.google.com/file/d/1G794aajVan555yxPnekqaoq9nN6_7u-7/view?usp=sharing" target="_blank"> link </a>
+  <li> Download Assets From <a href="https://drive.google.com/file/d/1G794aajVan555yxPnekqaoq9nN6_7u-7/view?usp=sharing" target="_blank"> link </li>
   <li> Run the project from Menu.java</li>
   <li> Use jdk1.8.0 version</li>
   <li> Add JOGLwin lib to your project</li>
