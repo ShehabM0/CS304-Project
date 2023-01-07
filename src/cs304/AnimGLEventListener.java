@@ -21,12 +21,12 @@ import java.awt.Font;
 
 public class AnimGLEventListener extends AnimListener implements MouseListener {
 
+	boolean pauseGame = false;
+
 	int animationIndex_blue = 3;
-	int maxHeight = 500;
-	int maxWidth = 900;
 	int ball_index = 0;
-	int w = 900;
-	int h = 500;
+	int w = 900; // maxWidth
+	int h = 500; // maxHeight
 	int r = 30;
 
 	Set<Integer> pressed = new HashSet<Integer>();
@@ -56,7 +56,7 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 	boolean f_b5 = false;
 
 	String textureNames[] = { "redbulll.png", "blueball.png", "redflagbb.png", "blueflagbb.png", "redballflag.png",
-			"wall.png", "sound.png", "mute.png", "redVSblue.png", "Back.png" };
+			"wall.png", "paused.jpg", "sound.png", "mute.png", "redVSblue.png", "Back.png" };
 	TextureReader.Texture texture[] = new TextureReader.Texture[textureNames.length];
 	int textures[] = new int[textureNames.length];
 	Rectangle bound[] = { new Rectangle(w, 0, w + 100, h + 100), new Rectangle(0, h, w, h + 100),
@@ -103,7 +103,7 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 		music("Assets//catchtheflag.wav");
 
 		gl.glLoadIdentity();
-		gl.glOrtho(0, maxWidth, 0, maxHeight, -1, 1);
+		gl.glOrtho(0, w, 0, h, -1, 1);
 	}
 
 	public void display(GLAutoDrawable gld) {
@@ -111,7 +111,12 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 		GL gl = gld.getGL();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 
-		if (!finishGame) {
+		if (pauseGame) {
+			DrawSprite(gl, 450, 250, textures.length - 5, 900, 500);
+			clip.stop();
+		}
+
+		if (!finishGame && !pauseGame) {
 			// background
 			DrawSprite(gl, 450, 250, textures.length - 1, 900, 500);
 			// scores
@@ -123,7 +128,6 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 			if (soundOn) {
 				DrawSprite(gl, 40, 30, textures.length - 4, 50, 20);
 				clip.start();
-
 			} else {
 				DrawSprite(gl, 40, 30, textures.length - 3, 50, 20);
 				clip.stop();
@@ -263,7 +267,7 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 			}
 		}
 		if (isBlueFlag == false) {
-			if (red[3].x <= redFlagX) {
+			if (red[3].x <= w / 2) {
 				red_score++;
 				isBlueFlag = true;
 			}
@@ -312,13 +316,15 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 	public synchronized void keyPressed(KeyEvent e) {
 		pressed.add(e.getKeyCode());
 
+		if (pressed.contains(KeyEvent.VK_ESCAPE)) {
+			pauseGame = (pauseGame) ? false : true;
+		}
+
 		if (pressed.contains(KeyEvent.VK_UP)) {
 			red[3].moveBallY(1, bound);
 		} else if (pressed.contains(KeyEvent.VK_DOWN)) {
-
 			red[3].moveBallY(-1, bound);
 		} else if (pressed.contains(KeyEvent.VK_RIGHT)) {
-
 			red[3].moveBallX(1, bound);
 		} else if (pressed.contains(KeyEvent.VK_LEFT)) {
 			red[3].moveBallX(-1, bound);
