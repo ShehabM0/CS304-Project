@@ -21,39 +21,31 @@ import java.awt.Font;
 
 public class AnimGLEventListener extends AnimListener implements MouseListener {
 
-	boolean pauseGame = false;
-
-	int animationIndex_blue = 3;
-	int ball_index = 0;
 	int w = 900; // maxWidth
 	int h = 500; // maxHeight
 	int r = 30;
 
 	Set<Integer> pressed = new HashSet<Integer>();
 
+	private GLCanvas glc;
 	static Anim anim;
 
 	TextRenderer t_blue = new TextRenderer(new Font("Comic Sans MS", Font.BOLD, 14));
-	TextRenderer renderer = new TextRenderer(new Font("SanasSerif", Font.BOLD, 20));
 	TextRenderer t_red = new TextRenderer(new Font("Comic Sans MS", Font.BOLD, 14));
 	Color color = new Color(0, 0, 0);
 
-	int m = 1;
-	int x1 = 380, y1 = 370, x2 = 515, y2 = 240;
-
 	int blueFlagX = w - 20, blueFlagY = h / 2, redFlagX = 20, redFlagY = h / 2;
-	int red_score = 0, blue_score = 0, redf = 0, bluef = 0;
-	boolean isRedFlag = true, finishGame = false;
-	boolean withflag = false, n = false;
-	boolean isBlueFlag = true;
+	int red_score = 0, blue_score = 0;
+	boolean isRedFlag = true, isBlueFlag = true;
+	int m = 1;
+
+	boolean pauseGame = false, finishGame = false;
 
 	boolean soundOn = true;
 	Clip clip;
 
-	boolean f_r4 = false;
-	boolean f_r5 = false;
-	boolean f_b4 = false;
-	boolean f_b5 = false;
+	boolean f_r4 = false, f_r5 = false;
+	boolean f_b4 = false, f_b5 = false;
 
 	String textureNames[] = { "redbulll.png", "blueball.png", "redflagbb.png", "blueflagbb.png", "redballflag.png",
 			"wall.png", "paused.jpg", "sound.png", "mute.png", "redVSblue.png", "Back.png" };
@@ -67,8 +59,6 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 			new Ball(600, 15) };
 	Ball red[] = { new Ball(0, 0), new Ball(0, 0), new Ball(380, 370), new Ball(380, 120), new Ball(330, 480),
 			new Ball(300, 15) };
-
-	private GLCanvas glc;
 
 	public void init(GLAutoDrawable gld) {
 		red[0].setOrbital(bound[4], 0);
@@ -112,54 +102,54 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 
 		if (pauseGame) {
-			DrawSprite(gl, 450, 250, textures.length - 5, 900, 500);
+			Draw(gl, 450, 250, textures.length - 5, 900, 500);
 			clip.stop();
 		}
 
 		if (!finishGame && !pauseGame) {
 			// background
-			DrawSprite(gl, 450, 250, textures.length - 1, 900, 500);
+			Draw(gl, 450, 250, textures.length - 1, 900, 500);
 			// scores
 			redScore(this.red_score);
 			blueScore(this.blue_score);
 			// redVSblue
-			DrawSprite(gl, 440, 470, textures.length - 2, 200, 50);
+			Draw(gl, 440, 470, textures.length - 2, 200, 50);
 			// sound
 			if (soundOn) {
-				DrawSprite(gl, 40, 30, textures.length - 4, 50, 20);
+				Draw(gl, 40, 30, textures.length - 4, 50, 20);
 				clip.start();
 			} else {
-				DrawSprite(gl, 40, 30, textures.length - 3, 50, 20);
+				Draw(gl, 40, 30, textures.length - 3, 50, 20);
 				clip.stop();
 			}
 
 			// 2_redBalls, 2_blueBalls
-			DrawSprite(gl, red[4].x, red[4].y, 0, r, r);
-			DrawSprite(gl, red[5].x, red[5].y, 0, r, r);
-			DrawSprite(gl, blue[4].x, blue[4].y, 1, r, r);
-			DrawSprite(gl, blue[5].x, blue[5].y, 1, r, r);
+			Draw(gl, red[4].x, red[4].y, 0, r, r);
+			Draw(gl, red[5].x, red[5].y, 0, r, r);
+			Draw(gl, blue[4].x, blue[4].y, 1, r, r);
+			Draw(gl, blue[5].x, blue[5].y, 1, r, r);
 			// vertical direction reverse
 			vdr();
 
 			for (int i = 0; i < red.length - 2; i++)
-				DrawSprite(gl, red[i].x, red[i].y, 0, r, r);
+				Draw(gl, red[i].x, red[i].y, 0, r, r);
 
 			for (int i = 0; i < blue.length - 2; i++)
-				DrawSprite(gl, blue[i].x, blue[i].y, 1, r, r);
+				Draw(gl, blue[i].x, blue[i].y, 1, r, r);
 
 			for (int i = 4; i < bound.length; i++)
-				DrawSprite(gl, (bound[i].topX + bound[i].bottomX) / 2, (bound[i].topY + bound[i].bottomY) / 2, 5, 100,
+				Draw(gl, (bound[i].topX + bound[i].bottomX) / 2, (bound[i].topY + bound[i].bottomY) / 2, 5, 100,
 						100);
 
 			if (isRedFlag)
-				DrawSprite(gl, redFlagX, redFlagY, 2, 50, 50);
+				Draw(gl, redFlagX, redFlagY, 2, 50, 50);
 			else
-				DrawSprite(gl, blue[3].x, blue[3].y, 2, 30, 30);
+				Draw(gl, blue[3].x, blue[3].y, 2, 30, 30);
 
 			if (isBlueFlag)
-				DrawSprite(gl, blueFlagX, blueFlagY, 3, 50, 50);
+				Draw(gl, blueFlagX, blueFlagY, 3, 50, 50);
 			else
-				DrawSprite(gl, red[3].x, red[3].y, 3, 30, 30);
+				Draw(gl, red[3].x, red[3].y, 3, 30, 30);
 
 			textures_handle();
 
@@ -218,16 +208,9 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 		t_blue.endRendering();
 	}
 
-	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-	}
-
-	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
-	}
-
-	public void DrawSprite(GL gl, int x, int y, int index, float width, float height) {
+	public void Draw(GL gl, int x, int y, int index, float width, float height) {
 		gl.glEnable(GL.GL_BLEND);
 		gl.glBindTexture(GL.GL_TEXTURE_2D, textures[index]); // Turn Blending On
-
 		gl.glPushMatrix();
 		gl.glTranslated(x, y, 0);
 		// gl.glScaled(0.1*scale,0.1*scale,1);
@@ -243,12 +226,7 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 		gl.glVertex3f(-1.0f, 1.0f, -1.0f);
 		gl.glEnd();
 		gl.glPopMatrix();
-
 		gl.glDisable(GL.GL_BLEND);
-	}
-
-	void setCanvas(GLCanvas glcanvas) {
-		this.glc = glcanvas;
 	}
 
 	public void textures_handle() {
@@ -351,15 +329,15 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 		// don't care
 	}
 
-	public boolean isKeyPressed(final int keyCode) {
-		return false;
-	}
-
 	public void mouseClicked(MouseEvent e) {
 		double x = e.getX();
 		double y = e.getY();
 		if (x >= 20 && x <= 60 && y >= 430 && y <= 445)
 			soundOn = (soundOn) ? false : true;
+	}
+
+	void setCanvas(GLCanvas glcanvas) {
+		this.glc = glcanvas;
 	}
 
 	public void mouseEntered(MouseEvent e) {
@@ -372,6 +350,12 @@ public class AnimGLEventListener extends AnimListener implements MouseListener {
 	}
 
 	public void mouseReleased(MouseEvent e) {
+	}
+
+	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
+	}
+
+	public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
 	}
 
 	public static void main(String[] args) {
